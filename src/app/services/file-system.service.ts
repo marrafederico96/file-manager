@@ -63,8 +63,13 @@ export class FileSystemService {
   async createFolder(name: string): Promise<void> {
     const current = this.currentDirHandle();
     if (!current) throw new Error('Nessuna directory corrente');
-    await current.getDirectoryHandle(name, { create: true });
-    await this.loadFolderContent(current);
+    const newHandle = await current.getDirectoryHandle(name, { create: true });
+    this.folderContent.update((items) =>
+      [...items, newHandle].sort((a, b) => {
+        if (a.kind !== b.kind) return a.kind === 'directory' ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      }),
+    );
   }
 
   async navigateToRoot(): Promise<void> {
@@ -80,7 +85,7 @@ export class FileSystemService {
     const current = this.currentDirHandle();
     if (!current) throw new Error('Nessuna directory corrente selezionata');
     await current.removeEntry(handle.name, { recursive: true });
-    await this.loadFolderContent(current);
+    this.folderContent.update((items) => items.filter((item) => item.name !== handle.name));
     return true;
   }
 }
