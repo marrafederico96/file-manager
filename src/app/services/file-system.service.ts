@@ -105,4 +105,14 @@ export class FileSystemService {
       await dir.removeEntry(entry.name);
     }
   }
+
+  async getEntryCount(dir: FileSystemDirectoryHandle): Promise<{ files: number; dirs: number }> {
+    let files = 0;
+    let dirs = 0;
+    for await (const entry of dir.values()) {
+      if (entry.kind === 'file') files++;
+      else dirs++;
+    }
+    return { files, dirs };
+  }
 }

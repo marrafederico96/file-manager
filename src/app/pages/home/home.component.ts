@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,10 +36,17 @@ export class HomeComponent {
       ) as FileSystemDirectoryHandle[],
   );
 
+  entryCounts = signal<Map<string, { files: number; dirs: number }>>(new Map());
+
   constructor() {
     effect(async () => {
       const root = this.fileSystemService.rootFolder();
       if (root) await this.fileSystemService.initRoot(root);
+    });
+
+    effect(() => {
+      const items = this.folderContent(); // dipendenza reattiva
+      this.loadCounts(items);
     });
 
     window.addEventListener('popstate', async () => {
@@ -47,6 +54,19 @@ export class HomeComponent {
         await this.goBack();
       }
     });
+  }
+
+  private async loadCounts(items: FileSystemHandle[]) {
+    const counts = new Map<string, { files: number; dirs: number }>();
+    for (const item of items) {
+      if (item.kind === 'directory') {
+        counts.set(
+          item.name,
+          await this.fileSystemService.getEntryCount(item as FileSystemDirectoryHandle),
+        );
+      }
+    }
+    this.entryCounts.set(counts);
   }
 
   async deleteItem(handle: FileSystemHandle) {
