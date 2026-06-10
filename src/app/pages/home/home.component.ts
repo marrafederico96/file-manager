@@ -9,7 +9,6 @@ import { firstValueFrom } from 'rxjs';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { CameraService } from '../../services/camera.service';
 import { FileSystemService } from '../../services/file-system.service';
-
 @Component({
   selector: 'app-home',
   imports: [
@@ -51,7 +50,7 @@ export class HomeComponent {
   }
 
   async deleteItem(handle: FileSystemHandle) {
-    const confirmed = await firstValueFrom(
+    const confirmed: boolean = await firstValueFrom(
       this.dialog
         .open(ConfirmDialogComponent, {
           data: { message: `Sei sicuro di voler eliminare "${handle.name}"?` },
