@@ -37,8 +37,7 @@ export class HomeComponent {
     });
   }
 
-  async deleteItem(event: MouseEvent, handle: FileSystemHandle) {
-    event.stopPropagation();
+  async deleteItem(handle: FileSystemHandle) {
     const confirmed = await firstValueFrom(
       this.dialog
         .open(ConfirmDialogComponent, {
@@ -65,7 +64,7 @@ export class HomeComponent {
     await this.fileSystemService.navigateBack();
   }
 
-  async openCamera(event: MouseEvent, handle: FileSystemHandle) {
+  async openCamera(handle: FileSystemHandle) {
     const dirHandle = handle as FileSystemDirectoryHandle;
     await this.cameraService.openCamera(dirHandle);
   }
