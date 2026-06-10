@@ -85,12 +85,24 @@ export class FileSystemService {
     const current = this.currentDirHandle();
     if (!current) throw new Error('Nessuna directory corrente selezionata');
     try {
+      if (handle.kind === 'directory') {
+        await this.clearDirectory(handle as FileSystemDirectoryHandle);
+      }
       await current.removeEntry(handle.name, { recursive: true });
       this.folderContent.update((items) => items.filter((item) => item.name !== handle.name));
       return true;
     } catch (e) {
       console.error('removeEntry fallito:', e);
       throw e;
+    }
+  }
+
+  private async clearDirectory(dir: FileSystemDirectoryHandle): Promise<void> {
+    for await (const entry of dir.values()) {
+      if (entry.kind === 'directory') {
+        await this.clearDirectory(entry as FileSystemDirectoryHandle);
+      }
+      await dir.removeEntry(entry.name);
     }
   }
 }
