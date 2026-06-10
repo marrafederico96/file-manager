@@ -7,7 +7,7 @@
     <mat-icon>chevron_right</mat-icon>
     }
     }
-    </mat-toolbar>
+</mat-toolbar>
 <mat-list>
     @for (item of folderContent(); track item) {
     @if (item.kind === 'directory') {
@@ -15,7 +15,7 @@
         <mat-icon matListItemIcon>folder</mat-icon>
         <div matListItemTitle>{{item.name}}</div>
         <div matListItemMeta>
-            <button matIconButton (click)="openCamera( item)">
+            <button matIconButton (click)="$event.stopPropagation(); openCamera(item)">
                 <mat-icon>camera</mat-icon>
             </button>
             <button mat-icon-button [matMenuTriggerFor]="menuCartella" (click)="$event.stopPropagation()">
