@@ -8,7 +8,7 @@ export class FileSystemService {
   folderContent = signal<FileSystemHandle[]>([]);
   canGoBack = computed(() => this.historyStack().length > 0);
 
-  private historyStack = signal<FileSystemDirectoryHandle[]>([]);
+  historyStack = signal<FileSystemDirectoryHandle[]>([]);
 
   constructor(private location: Location) {}
 

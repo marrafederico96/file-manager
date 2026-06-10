@@ -1,3 +1,13 @@
+<mat-toolbar>
+    @for (dir of breadcrumb(); track dir.name; let i = $index, last = $last) {
+    <button mat-button [disabled]="last" (click)="navigateToBreadcrumb(i)">
+        {{ dir.name }}
+    </button>
+    @if (!last) {
+    <mat-icon>chevron_right</mat-icon>
+    }
+    }
+    </mat-toolbar>
 <mat-list>
     @for (item of folderContent(); track item) {
     @if (item.kind === 'directory') {

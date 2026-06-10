@@ -4,6 +4,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { CameraService } from '../../services/camera.service';
@@ -11,7 +12,14 @@ import { FileSystemService } from '../../services/file-system.service';
 
 @Component({
   selector: 'app-home',
-  imports: [MatListModule, MatMenuModule, MatIconModule, MatButtonModule, MatDialogModule],
+  imports: [
+    MatListModule,
+    MatToolbarModule,
+    MatMenuModule,
+    MatIconModule,
+    MatButtonModule,
+    MatDialogModule,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -22,6 +30,12 @@ export class HomeComponent {
 
   folderContent = computed(() => this.fileSystemService.folderContent());
   canGoBack = computed(() => this.fileSystemService.canGoBack());
+  breadcrumb = computed(
+    () =>
+      [...this.fileSystemService.historyStack(), this.fileSystemService.currentDirHandle()].filter(
+        Boolean,
+      ) as FileSystemDirectoryHandle[],
+  );
 
   constructor() {
     effect(async () => {
@@ -36,8 +50,7 @@ export class HomeComponent {
     });
   }
 
-  async deleteItem(event: MouseEvent, handle: FileSystemHandle) {
-    event.stopPropagation();
+  async deleteItem(handle: FileSystemHandle) {
     const confirmed = await firstValueFrom(
       this.dialog
         .open(ConfirmDialogComponent, {
@@ -69,7 +82,16 @@ export class HomeComponent {
     await this.fileSystemService.navigateBack();
   }
 
-  async openCamera(event: MouseEvent, handle: FileSystemHandle) {
+  async navigateToBreadcrumb(index: number) {
+    const stack = this.fileSystemService.historyStack();
+    if (index === stack.length) return;
+    const target = stack[index];
+    this.fileSystemService.historyStack.set(stack.slice(0, index));
+    this.fileSystemService.currentDirHandle.set(target);
+    await this.fileSystemService.loadFolderContent(target);
+  }
+
+  async openCamera(handle: FileSystemHandle) {
     const dirHandle = handle as FileSystemDirectoryHandle;
     await this.cameraService.openCamera(dirHandle);
   }
