@@ -1,6 +1,4 @@
 import { Component, computed, effect, inject } from '@angular/core';
-import { FileSystemService } from '../../services/file-system.service';
-// Material component
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { CameraService } from '../../services/camera.service';
+import { FileSystemService } from '../../services/file-system.service';
 
 @Component({
   selector: 'app-home',
@@ -37,7 +36,8 @@ export class HomeComponent {
     });
   }
 
-  async deleteItem(handle: FileSystemHandle) {
+  async deleteItem(event: MouseEvent, handle: FileSystemHandle) {
+    event.stopPropagation();
     const confirmed = await firstValueFrom(
       this.dialog
         .open(ConfirmDialogComponent, {
@@ -46,7 +46,12 @@ export class HomeComponent {
         .afterClosed(),
     );
     if (!confirmed) return;
-    await this.fileSystemService.deleteFileOrDirectory(handle);
+    try {
+      await this.fileSystemService.deleteFileOrDirectory(handle);
+    } catch (e) {
+      console.error('Errore durante la delete:', e);
+      alert(`Impossibile eliminare "${handle.name}": ${(e as Error).message}`);
+    }
   }
 
   async openItem(handle: FileSystemHandle) {
@@ -64,7 +69,7 @@ export class HomeComponent {
     await this.fileSystemService.navigateBack();
   }
 
-  async openCamera(handle: FileSystemHandle) {
+  async openCamera(event: MouseEvent, handle: FileSystemHandle) {
     const dirHandle = handle as FileSystemDirectoryHandle;
     await this.cameraService.openCamera(dirHandle);
   }

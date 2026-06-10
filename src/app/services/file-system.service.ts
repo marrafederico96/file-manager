@@ -84,8 +84,13 @@ export class FileSystemService {
   async deleteFileOrDirectory(handle: FileSystemHandle): Promise<boolean> {
     const current = this.currentDirHandle();
     if (!current) throw new Error('Nessuna directory corrente selezionata');
-    await current.removeEntry(handle.name, { recursive: true });
-    this.folderContent.update((items) => items.filter((item) => item.name !== handle.name));
-    return true;
+    try {
+      await current.removeEntry(handle.name, { recursive: true });
+      this.folderContent.update((items) => items.filter((item) => item.name !== handle.name));
+      return true;
+    } catch (e) {
+      console.error('removeEntry fallito:', e);
+      throw e;
+    }
   }
 }
