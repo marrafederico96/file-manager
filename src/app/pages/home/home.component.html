@@ -1,0 +1,25 @@
+<mat-list>
+    @for (item of folderContent(); track item) {
+    @if (item.kind === 'directory') {
+    <mat-list-item button (click)="navigateTo(item)">
+        <mat-icon matListItemIcon>folder</mat-icon>
+        <div matListItemTitle>{{item.name}}</div>
+        <div matListItemMeta>
+            <button matIconButton (click)="deleteItem($event,item)">
+                <mat-icon>delete</mat-icon>
+            </button>
+        </div>
+    </mat-list-item>
+    } @else {
+    <mat-list-item>
+        <mat-icon matListItemIcon>file</mat-icon>
+        <div matListItemTitle>{{item.name}}</div>
+        <div matListItemMeta>
+            <button matIconButton (click)="deleteItem($event,item)">
+                <mat-icon>delete</mat-icon>
+            </button>
+        </div>
+    </mat-list-item>
+    }
+    }
+</mat-list>

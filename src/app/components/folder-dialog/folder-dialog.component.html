@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>Create Folder</h2>
+
+<mat-dialog-content>
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Folder name</mat-label>
+        <input matInput [formControl]="folderName" required />
+        @if (folderName.hasError('alreadyExists')) {
+        <mat-error>Una cartella con questo nome esiste già</mat-error>
+        }
+    </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button matButton (click)="close()">Cancel</button>
+    <button matButton="filled" [disabled]="folderName.invalid" (click)="create()">Create</button>
+</mat-dialog-actions>

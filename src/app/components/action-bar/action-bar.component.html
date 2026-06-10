@@ -1,13 +1,17 @@
+<mat-divider></mat-divider>
 <div class="btn-container">
-    <button matIconButton>
+    @if (root()) {
+    <button matButton="text" (click)="selectRootFolder()">{{root()?.name}}</button>
+    }@else {
+    <button matIconButton (click)="selectRootFolder()">
         <mat-icon>folder_open</mat-icon>
     </button>
-
-    <button matIconButton>
+    }
+    <button matIconButton [disabled]="!root()" (click)="openDialog()">
         <mat-icon>create_new_folder</mat-icon>
     </button>
 
-    <button matIconButton>
+    <button matIconButton [disabled]="!root()" (click)="openCamera()">
         <mat-icon>camera</mat-icon>
     </button>
 </div>
