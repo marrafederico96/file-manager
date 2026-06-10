@@ -74,18 +74,18 @@ export class FileSystemService {
 
   async deleteFileOrDirectory(handle: FileSystemHandle): Promise<void> {
     const current = this.currentDirHandle();
-
     if (!current) throw new Error('Nessuna directory corrente selezionata');
 
     const confirmed = confirm(`Sei sicuro di voler eliminare ${handle.name}?`);
     if (!confirmed) return;
 
     try {
-      await current.removeEntry(handle.name, { recursive: true });
-      await this.loadFolderContent(current);
+      await current
+        .removeEntry(handle.name, { recursive: true })
+        .then(async () => await this.loadFolderContent(current));
     } catch (error) {
       alert(
-        "Impossibile eliminare l'elemento. Potrebbe essere aperto in un altro programma o non avere i permessi necessari.",
+        "Impossibile eliminare l'elemento. Assicurati che non sia aperto in un altro programma o che la cartella non contenga file bloccati.",
       );
     }
   }

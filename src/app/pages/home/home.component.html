@@ -5,14 +5,25 @@
         <mat-icon matListItemIcon>folder</mat-icon>
         <div matListItemTitle>{{item.name}}</div>
         <div matListItemMeta>
-            <button matIconButton (click)="deleteItem($event,item)">
-                <mat-icon>delete</mat-icon>
+            <button matIconButton (click)="openCamera($event, item)">
+                <mat-icon>camera</mat-icon>
             </button>
+            <button mat-icon-button [matMenuTriggerFor]="menuCartella" (click)="$event.stopPropagation()">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+
+            <mat-menu #menuCartella="matMenu">
+
+                <button mat-menu-item (click)="deleteItem($event, item)">
+                    <mat-icon>delete</mat-icon>
+                    <span>Elimina cartella</span>
+                </button>
+            </mat-menu>
         </div>
     </mat-list-item>
     } @else {
     <mat-list-item>
-        <mat-icon matListItemIcon>file</mat-icon>
+        <mat-icon matListItemIcon>description</mat-icon>
         <div matListItemTitle>{{item.name}}</div>
         <div matListItemMeta>
             <button matIconButton (click)="deleteItem($event,item)">

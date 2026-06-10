@@ -5,15 +5,18 @@ import { FileSystemService } from '../../services/file-system.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { CameraService } from '../../services/camera.service';
 
 @Component({
   selector: 'app-home',
-  imports: [MatListModule, MatIconModule, MatButtonModule],
+  imports: [MatListModule, MatMenuModule, MatIconModule, MatButtonModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
 export class HomeComponent {
   private fileSystemService = inject(FileSystemService);
+  private cameraService = inject(CameraService);
 
   folderContent = computed(() => this.fileSystemService.folderContent());
   canGoBack = computed(() => this.fileSystemService.canGoBack());
@@ -48,5 +51,10 @@ export class HomeComponent {
 
   async goBack() {
     await this.fileSystemService.navigateBack();
+  }
+
+  async openCamera(event: MouseEvent, handle: FileSystemHandle) {
+    const dirHandle = handle as FileSystemDirectoryHandle;
+    await this.cameraService.openCamera(dirHandle);
   }
 }

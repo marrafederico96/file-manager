@@ -34,18 +34,8 @@ export class ActionBarComponent {
   }
 
   async openCamera() {
-    try {
-      const file = await this.cameraService.takePhoto();
-
-      const dirHandle = this.currentDir();
-      if (dirHandle) {
-        const folderName = dirHandle.name;
-        await this.cameraService.savePhoto(file, dirHandle, folderName);
-        await this.fileSystemService.loadFolderContent(dirHandle);
-      }
-    } catch (err) {
-      console.error('Foto annullata o errore:', err);
-    }
+    const handle = this.currentDir();
+    if (handle) await this.cameraService.openCamera(handle);
   }
 
   async openDialog() {
