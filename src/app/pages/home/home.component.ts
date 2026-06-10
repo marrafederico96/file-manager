@@ -2,20 +2,24 @@ import { Component, computed, effect, inject } from '@angular/core';
 import { FileSystemService } from '../../services/file-system.service';
 // Material component
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
+import { firstValueFrom } from 'rxjs';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { CameraService } from '../../services/camera.service';
 
 @Component({
   selector: 'app-home',
-  imports: [MatListModule, MatMenuModule, MatIconModule, MatButtonModule],
+  imports: [MatListModule, MatMenuModule, MatIconModule, MatButtonModule, MatDialogModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
 export class HomeComponent {
   private fileSystemService = inject(FileSystemService);
   private cameraService = inject(CameraService);
+  private dialog = inject(MatDialog);
 
   folderContent = computed(() => this.fileSystemService.folderContent());
   canGoBack = computed(() => this.fileSystemService.canGoBack());
@@ -35,7 +39,13 @@ export class HomeComponent {
 
   async deleteItem(event: MouseEvent, handle: FileSystemHandle) {
     event.stopPropagation();
-    const confirmed = confirm(`Sei sicuro di voler eliminare "${handle.name}"?`);
+    const confirmed = await firstValueFrom(
+      this.dialog
+        .open(ConfirmDialogComponent, {
+          data: { message: `Sei sicuro di voler eliminare "${handle.name}"?` },
+        })
+        .afterClosed(),
+    );
     if (!confirmed) return;
     await this.fileSystemService.deleteFileOrDirectory(handle);
   }
