@@ -1,9 +1,11 @@
-import { inject, Injectable } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { FileSystemService } from './file-system.service';
 
 @Injectable({ providedIn: 'root' })
 export class CameraService {
   private fileSystemService = inject(FileSystemService);
+
+  currentDir = computed(() => this.fileSystemService.currentDirHandle());
 
   private takePhoto(): Promise<File> {
     return new Promise((resolve, reject) => {
@@ -27,7 +29,9 @@ export class CameraService {
     try {
       const file = await this.takePhoto();
       await this.savePhoto(file, handle);
-      await this.fileSystemService.loadFolderContent(handle);
+      if (this.currentDir() === handle) {
+        await this.fileSystemService.loadFolderContent(handle);
+      }
     } catch (err) {
       if (err instanceof Error && err.cause === 'USER_CANCELED') {
         console.log("L'utente ha annullato l'operazione.");
