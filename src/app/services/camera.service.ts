@@ -26,8 +26,8 @@ export class CameraService {
   async openCamera(handle: FileSystemDirectoryHandle): Promise<void> {
     try {
       const file = await this.takePhoto();
-      const fileHandle = await this.savePhoto(file, handle);
-      this.fileSystemService.folderContent.update((items) => [...items, fileHandle]);
+      await this.savePhoto(file, handle);
+      await this.fileSystemService.loadFolderContent(handle);
     } catch (err) {
       if (err instanceof Error && err.cause === 'USER_CANCELED') {
         console.log("L'utente ha annullato l'operazione.");
@@ -37,10 +37,7 @@ export class CameraService {
     }
   }
 
-  private async savePhoto(
-    file: File,
-    dirHandle: FileSystemDirectoryHandle,
-  ): Promise<FileSystemFileHandle> {
+  private async savePhoto(file: File, dirHandle: FileSystemDirectoryHandle): Promise<void> {
     const existingNames = new Set<string>();
     for await (const entry of dirHandle.values()) {
       if (entry.kind === 'file') existingNames.add(entry.name);
@@ -61,6 +58,5 @@ export class CameraService {
       await writable.abort();
       throw e;
     }
-    return fileHandle;
   }
 }

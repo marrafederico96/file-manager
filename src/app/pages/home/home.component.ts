@@ -1,6 +1,5 @@
 import { Component, computed, effect, inject } from '@angular/core';
 import { FileSystemService } from '../../services/file-system.service';
-
 // Material component
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -26,7 +25,8 @@ export class HomeComponent {
       const root = this.fileSystemService.rootFolder();
       if (root) await this.fileSystemService.initRoot(root);
     });
-    window.addEventListener('popstate', async (event: PopStateEvent) => {
+
+    window.addEventListener('popstate', async () => {
       if (this.canGoBack()) {
         await this.goBack();
       }
@@ -35,6 +35,8 @@ export class HomeComponent {
 
   async deleteItem(event: MouseEvent, handle: FileSystemHandle) {
     event.stopPropagation();
+    const confirmed = confirm(`Sei sicuro di voler eliminare "${handle.name}"?`);
+    if (!confirmed) return;
     await this.fileSystemService.deleteFileOrDirectory(handle);
   }
 
