@@ -56,9 +56,10 @@ export class HomeComponent {
     });
   }
 
-  private async loadCounts(items: FileSystemHandle[]) {
+  async loadCounts(items?: FileSystemHandle[]) {
     const counts = new Map<string, { files: number; dirs: number }>();
-    for (const item of items) {
+    const content = items ?? this.folderContent();
+    for (const item of content) {
       if (item.kind === 'directory') {
         counts.set(
           item.name,
@@ -113,5 +114,6 @@ export class HomeComponent {
   async openCamera(handle: FileSystemHandle) {
     const dirHandle = handle as FileSystemDirectoryHandle;
     await this.cameraService.openCamera(dirHandle);
+    await this.loadCounts();
   }
 }
