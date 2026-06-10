@@ -1,6 +1,7 @@
-import { computed, Service, signal } from '@angular/core';
+import { Location } from '@angular/common';
+import { computed, Injectable, signal } from '@angular/core';
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class FileSystemService {
   rootFolder = signal<FileSystemDirectoryHandle | undefined>(undefined);
   currentDirHandle = signal<FileSystemDirectoryHandle | undefined>(undefined);
@@ -9,12 +10,18 @@ export class FileSystemService {
 
   private historyStack = signal<FileSystemDirectoryHandle[]>([]);
 
-  async selectRootFolder() {
-    this.rootFolder.set(
-      await window.showDirectoryPicker({
-        mode: 'readwrite',
-      }),
-    );
+  constructor(private location: Location) {}
+
+  async selectRootFolder(): Promise<void> {
+    try {
+      this.rootFolder.set(
+        await window.showDirectoryPicker({
+          mode: 'readwrite',
+        }),
+      );
+    } catch (e) {
+      if ((e as DOMException).name !== 'AbortError') throw e;
+    }
   }
 
   async initRoot(root: FileSystemDirectoryHandle): Promise<void> {
@@ -23,25 +30,22 @@ export class FileSystemService {
     await this.loadFolderContent(root);
   }
 
-  async loadFolderContent(folder: FileSystemDirectoryHandle) {
+  async loadFolderContent(folder: FileSystemDirectoryHandle): Promise<void> {
     const content: FileSystemHandle[] = [];
-
-    for await (var item of folder.values()) {
+    for await (const item of folder.values()) {
       content.push(item);
     }
-
     const sortedContent = content.sort((a, b) => {
       if (a.kind !== b.kind) return a.kind === 'directory' ? -1 : 1;
-      return 0;
+      return a.name.localeCompare(b.name);
     });
-
     this.folderContent.set(sortedContent);
   }
 
   async navigateTo(dirHandle: FileSystemDirectoryHandle): Promise<void> {
     const current = this.currentDirHandle();
     if (current) this.historyStack.update((s) => [...s, current]);
-    history.pushState({ inApp: true }, '');
+    this.location.go(this.location.path());
     this.currentDirHandle.set(dirHandle);
     await this.loadFolderContent(dirHandle);
   }
@@ -56,7 +60,7 @@ export class FileSystemService {
     }
   }
 
-  async createFolder(name: string) {
+  async createFolder(name: string): Promise<void> {
     const current = this.currentDirHandle();
     if (!current) throw new Error('Nessuna directory corrente');
     await current.getDirectoryHandle(name, { create: true });
@@ -72,21 +76,11 @@ export class FileSystemService {
     }
   }
 
-  async deleteFileOrDirectory(handle: FileSystemHandle): Promise<void> {
+  async deleteFileOrDirectory(handle: FileSystemHandle): Promise<boolean> {
     const current = this.currentDirHandle();
     if (!current) throw new Error('Nessuna directory corrente selezionata');
-
-    const confirmed = confirm(`Sei sicuro di voler eliminare ${handle.name}?`);
-    if (!confirmed) return;
-
-    try {
-      await current
-        .removeEntry(handle.name, { recursive: true })
-        .then(async () => await this.loadFolderContent(current));
-    } catch (error) {
-      alert(
-        "Impossibile eliminare l'elemento. Assicurati che non sia aperto in un altro programma o che la cartella non contenga file bloccati.",
-      );
-    }
+    await current.removeEntry(handle.name, { recursive: true });
+    await this.loadFolderContent(current);
+    return true;
   }
 }

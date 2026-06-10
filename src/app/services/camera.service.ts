@@ -11,13 +11,11 @@ export class CameraService {
       input.type = 'file';
       input.accept = 'image/*';
       input.capture = 'environment';
-
       input.onchange = () => {
         const file = input.files?.[0];
         if (file) resolve(file);
         else reject(new Error('Nessuna foto selezionata'));
       };
-
       input.oncancel = () => {
         reject(new Error('Input annullato', { cause: 'USER_CANCELED' }));
       };
@@ -25,42 +23,40 @@ export class CameraService {
     });
   }
 
-  async openCamera(handle: FileSystemDirectoryHandle) {
+  async openCamera(handle: FileSystemDirectoryHandle): Promise<void> {
     try {
       const file = await this.takePhoto();
-
-      if (handle) {
-        const folderName = handle.name;
-        await this.savePhoto(file, handle, folderName);
-        await this.fileSystemService.loadFolderContent(handle);
-      }
-    } catch (err: any) {
-      if (err?.cause === 'USER_CANCELED') {
+      await this.savePhoto(file, handle);
+      await this.fileSystemService.loadFolderContent(handle);
+    } catch (err) {
+      if (err instanceof Error && err.cause === 'USER_CANCELED') {
         console.log("L'utente ha annullato l'operazione.");
         return;
       }
-
-      console.error(err);
-      alert('Errore nel salvataggio della foto');
+      throw err;
     }
   }
 
-  private async savePhoto(
-    file: File,
-    dirHandle: FileSystemDirectoryHandle,
-    folderName: string,
-  ): Promise<void> {
-    let count = 0;
+  private async savePhoto(file: File, dirHandle: FileSystemDirectoryHandle): Promise<void> {
+    const existingNames = new Set<string>();
     for await (const entry of dirHandle.values()) {
-      if (entry.kind === 'file') count++;
+      if (entry.kind === 'file') existingNames.add(entry.name);
     }
 
     const ext = file.name.split('.').pop() ?? 'jpg';
-    const fileName = `${folderName.replaceAll(' ', '_')}_${count + 1}.${ext}`;
+    const base = dirHandle.name.replaceAll(' ', '_');
+    let index = existingNames.size + 1;
+    while (existingNames.has(`${base}_${index}.${ext}`)) index++;
+    const fileName = `${base}_${index}.${ext}`;
 
     const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
-    await writable.write(file);
-    await writable.close();
+    try {
+      await writable.write(file);
+      await writable.close();
+    } catch (e) {
+      await writable.abort();
+      throw e;
+    }
   }
 }
