@@ -5,8 +5,9 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "rootDir": "./src",
-    "types": ["@types/wicg-file-system-access"]
+    "lib": ["ES2022", "DOM"]
   },
+  "angularCompilerOptions": { "strictTemplates": true },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.spec.ts"]
 }

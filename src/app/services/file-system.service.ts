@@ -15,7 +15,7 @@ export class FileSystemService {
   async selectRootFolder(): Promise<void> {
     try {
       this.rootFolder.set(
-        await window.showDirectoryPicker({
+        await (window as any).showDirectoryPicker({
           mode: 'readwrite',
         }),
       );
