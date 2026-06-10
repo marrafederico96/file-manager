@@ -29,7 +29,8 @@ export class CameraService {
     try {
       const file = await this.takePhoto();
       await this.savePhoto(file, handle);
-      if (this.currentDir() === handle) {
+      const current = this.currentDir();
+      if (current && (await current.isSameEntry(handle))) {
         await this.fileSystemService.loadFolderContent(handle);
       }
     } catch (err) {
